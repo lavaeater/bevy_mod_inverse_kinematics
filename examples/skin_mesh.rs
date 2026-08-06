@@ -1,4 +1,5 @@
-use bevy::{color::palettes::css, prelude::*, window::WindowResolution};
+use bevy::{color::palettes::css, prelude::*, window::WindowResolution,
+           world_serialization::WorldAssetRoot};
 use bevy_mod_inverse_kinematics::*;
 
 #[derive(Component)]
@@ -41,7 +42,7 @@ fn setup(
         DirectionalLight {
             color: css::WHITE.into(),
             illuminance: 10000.0,
-            shadows_enabled: true,
+            shadow_maps_enabled: true,
             ..default()
         },
         Transform::from_xyz(-8.0, 8.0, 8.0),
@@ -59,7 +60,7 @@ fn setup(
     ));
 
     commands.spawn((
-        SceneRoot(assets.load(GltfAssetLabel::Scene(0).from_asset("skin.gltf#Scene0"))),
+        WorldAssetRoot(assets.load(GltfAssetLabel::Scene(0).from_asset("skin.gltf"))),
         Transform::from_xyz(0.0, 0.0, 0.0),
     ));
 }

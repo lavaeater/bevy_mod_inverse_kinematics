@@ -138,10 +138,7 @@ impl IkConstraint {
 
         // apply constraints on the way back from recursing
         let (mut transform, mut global_transform) = transforms.get_mut(chain[0])?;
-        transform.rotation = Quat::from_affine3(&parent_global_transform.affine())
-            .inverse()
-            .normalize()
-            * rotation;
+        transform.rotation = parent_global_transform.rotation().inverse().normalize() * rotation;
         *global_transform = parent_global_transform.mul_transform(*transform);
 
         Ok(*global_transform)
