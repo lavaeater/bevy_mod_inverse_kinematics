@@ -138,13 +138,13 @@ fn find_entity(
         let mut found = false;
         if let Ok(children) = children.get(current_entity) {
             for child in children.iter() {
-                if let Ok(name) = names.get(child) {
-                    if name == part {
-                        // Found a children with the right name, continue to the next part
-                        current_entity = child;
-                        found = true;
-                        break;
-                    }
+                if let Ok(name) = names.get(child)
+                    && name == part
+                {
+                    // Found a children with the right name, continue to the next part
+                    current_entity = child;
+                    found = true;
+                    break;
                 }
             }
         }
