@@ -39,7 +39,7 @@ impl IkConstraint {
 
         let mut joints = Vec::with_capacity(self.chain_length + 2);
         joints.push(entity);
-        for i in 0..self.chain_length + 1 {
+        for i in 0..=self.chain_length {
             joints.push(parents.get(joints[i])?.parent());
         }
 

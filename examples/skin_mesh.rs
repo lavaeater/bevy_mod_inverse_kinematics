@@ -134,7 +134,7 @@ fn find_entity(
 ) -> Result<Entity, ()> {
     let mut current_entity = root;
 
-    for part in path.iter() {
+    for part in path {
         let mut found = false;
         if let Ok(children) = children.get(current_entity) {
             for child in children.iter() {
