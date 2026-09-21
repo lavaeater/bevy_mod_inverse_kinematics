@@ -64,7 +64,6 @@ impl IkConstraint {
             let pole_target: Vec3 = transforms.get(pole_target)?.1.translation();
 
             let tangent = (target - start).normalize();
-            let _: () = target;
             let axis = (pole_target - start).cross(tangent);
             let normal = tangent.cross(axis).normalize();
 
