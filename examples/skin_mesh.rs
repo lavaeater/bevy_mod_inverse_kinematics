@@ -76,7 +76,7 @@ fn setup_ik(
     // Use the presence of `AnimationPlayer` to determine the root entity of the skeleton.
     for entity in added_query.iter() {
         // Try to get the entity for the right hand joint.
-        let right_hand = find_entity(
+        let Some(right_hand) = find_entity(
             &vec![
                 "Pelvis".into(),
                 "Spine1".into(),
@@ -89,8 +89,9 @@ fn setup_ik(
             entity,
             &children,
             &names,
-        )
-        .unwrap();
+        ).ok() else {
+            return;
+        };
 
         let target = commands
             .spawn((
@@ -166,7 +167,7 @@ fn manually_target(
 
     if let Some(event) = cursor.read().last() {
         let view = transform.to_matrix();
-        let viewport_rect = camera.logical_viewport_rect().unwrap();
+        let Some(viewport_rect) = camera.logical_viewport_rect() else {return;};
         let viewport_size = viewport_rect.size();
         let adj_cursor_pos = event.position - Vec2::new(viewport_rect.min.x, viewport_rect.min.y);
 

@@ -117,29 +117,31 @@ impl IkConstraint {
 
         // determine absolute rotation and translation for this bone where the tail touches the
         // target.
-        let rotation = if let Some(pt) = pole_target {
-            let on_pole = pt.origin
-                + (global_transform.translation() - pt.origin).project_onto_normalized(pt.tangent);
-            let distance = on_pole.distance(global_transform.translation());
-            let from_position = on_pole + pt.normal * distance;
-
-            let base = Quat::from_rotation_arc(normal.normalize(), Vec3::Z);
-
-            let forward = (target - from_position)
-                .try_normalize()
-                .unwrap_or(pt.tangent);
-            let up = forward.cross(pt.normal).normalize();
-            let right = up.cross(forward);
-            let orientation = Mat3::from_cols(right, up, forward) * Mat3::from_rotation_z(pt.angle);
-
-            (Quat::from_mat3(&orientation) * base).normalize()
-        } else {
-            Quat::from_rotation_arc(
-                normal.normalize(),
-                (target - global_transform.translation()).normalize(),
-            )
-            .normalize()
-        };
+        let rotation = pole_target.map_or_else(
+            || {
+                Quat::from_rotation_arc(
+                    normal.normalize(),
+                    (target - global_transform.translation()).normalize(),
+                )
+                .normalize()
+            },
+            |pt| {
+                let on_pole = pt.origin
+                    + (global_transform.translation() - pt.origin)
+                        .project_onto_normalized(pt.tangent);
+                let distance = on_pole.distance(global_transform.translation());
+                let from_position = on_pole + pt.normal * distance;
+                let base = Quat::from_rotation_arc(normal.normalize(), Vec3::Z);
+                let forward = (target - from_position)
+                    .try_normalize()
+                    .unwrap_or(pt.tangent);
+                let up = forward.cross(pt.normal).normalize();
+                let right = up.cross(forward);
+                let orientation =
+                    Mat3::from_cols(right, up, forward) * Mat3::from_rotation_z(pt.angle);
+                (Quat::from_mat3(&orientation) * base).normalize()
+            },
+        );
         let translation = target - rotation.mul_vec3(normal);
 
         // recurse to target the parent towards the current translation
