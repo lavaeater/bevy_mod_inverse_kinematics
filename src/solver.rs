@@ -40,13 +40,15 @@ impl IkConstraint {
         let mut joints = Vec::with_capacity(self.chain_length.saturating_add(2));
         joints.push(entity);
         for i in 0..=self.chain_length {
-            if let Some(e) = joints.get(i) && let Ok(parent) = parents.get(*e) {
+            if let Some(e) = joints.get(i)
+                && let Ok(parent) = parents.get(*e)
+            {
                 joints.push(parent.parent());
             }
         }
 
         if joints.len() <= self.chain_length {
-            return Ok(()); // ancestor chain shorter than chain_length                                                                         
+            return Ok(()); // ancestor chain shorter than chain_length
         }
 
         let target: Vec3 = transforms.get(self.target)?.1.translation();
@@ -56,11 +58,8 @@ impl IkConstraint {
             let Some(&start_joint) = joints.get(self.chain_length) else {
                 return Ok(());
             };
-            
-            let start: Vec3 = transforms
-                .get(start_joint)?
-                .1
-                .translation();
+
+            let start: Vec3 = transforms.get(start_joint)?.1.translation();
             let pole_target: Vec3 = transforms.get(pole_target)?.1.translation();
 
             let tangent = (target - start).normalize();
@@ -77,9 +76,15 @@ impl IkConstraint {
             None
         };
 
+        // `joints[0]` is `entity` itself; the chain to solve starts at its parent.
+        let Some((&first, rest)) = joints.get(1..).and_then(|chain| chain.split_first()) else {
+            return Ok(());
+        };
+
         for _ in 0..self.iterations {
             let result = Self::solve_recursive(
-                &joints[1..],
+                first,
+                rest,
                 normal,
                 target,
                 pole_target.as_ref(),
@@ -95,17 +100,18 @@ impl IkConstraint {
     }
 
     fn solve_recursive(
-        chain: &[Entity],
+        joint: Entity,
+        rest: &[Entity],
         normal: Vec3,
         target: Vec3,
         pole_target: Option<&PoleTarget>,
         transforms: &mut Query<(&mut Transform, &mut GlobalTransform)>,
     ) -> Result<GlobalTransform, QueryEntityError> {
-        let (&transform, &global_transform) = transforms.get(chain[0])?;
+        let (&transform, &global_transform) = transforms.get(joint)?;
 
-        if chain.len() == 1 {
+        let Some((&parent, rest)) = rest.split_first() else {
             return Ok(global_transform);
-        }
+        };
 
         let parent_normal = transform.translation;
 
@@ -138,7 +144,8 @@ impl IkConstraint {
 
         // recurse to target the parent towards the current translation
         let parent_global_transform = Self::solve_recursive(
-            &chain[1..],
+            parent,
+            rest,
             parent_normal,
             translation,
             pole_target,
@@ -146,7 +153,7 @@ impl IkConstraint {
         )?;
 
         // apply constraints on the way back from recursing
-        let (mut transform, mut global_transform) = transforms.get_mut(chain[0])?;
+        let (mut transform, mut global_transform) = transforms.get_mut(joint)?;
         transform.rotation = parent_global_transform.rotation().inverse().normalize() * rotation;
         *global_transform = parent_global_transform.mul_transform(*transform);
 
