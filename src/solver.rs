@@ -45,18 +45,26 @@ impl IkConstraint {
             }
         }
 
-        let target = transforms.get(self.target)?.1.translation();
-        let normal = transforms.get(entity)?.0.translation;
+        if joints.len() <= self.chain_length {
+            return Ok(()); // ancestor chain shorter than chain_length                                                                         
+        }
+
+        let target: Vec3 = transforms.get(self.target)?.1.translation();
+        let normal: Vec3 = transforms.get(entity)?.0.translation;
 
         let pole_target = if let Some(pole_target) = self.pole_target {
-            let start = transforms
-                .get(joints[self.chain_length])
-                .unwrap()
+            let Some(&start_joint) = joints.get(self.chain_length) else {
+                return Ok(());
+            };
+            
+            let start: Vec3 = transforms
+                .get(start_joint)?
                 .1
                 .translation();
-            let pole_target = transforms.get(pole_target)?.1.translation();
+            let pole_target: Vec3 = transforms.get(pole_target)?.1.translation();
 
             let tangent = (target - start).normalize();
+            let _: () = target;
             let axis = (pole_target - start).cross(tangent);
             let normal = tangent.cross(axis).normalize();
 
