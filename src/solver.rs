@@ -37,14 +37,16 @@ impl IkConstraint {
             return Ok(());
         }
 
-        let mut joints = Vec::with_capacity(self.chain_length + 2);
+        let mut joints = Vec::with_capacity(self.chain_length.saturating_add(2));
         joints.push(entity);
         for i in 0..=self.chain_length {
-            joints.push(parents.get(joints[i])?.parent());
+            if let Some(e) = joints.get(i) && let Ok(parent) = parents.get(*e) {
+                joints.push(parent.parent());
+            }
         }
 
         let target = transforms.get(self.target)?.1.translation();
-        let normal = transforms.get(joints[0])?.0.translation;
+        let normal = transforms.get(entity)?.0.translation;
 
         let pole_target = if let Some(pole_target) = self.pole_target {
             let start = transforms
