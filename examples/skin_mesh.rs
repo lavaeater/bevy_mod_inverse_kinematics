@@ -1,5 +1,6 @@
-use bevy::{color::palettes::css, prelude::*, window::WindowResolution,
-           world_serialization::WorldAssetRoot};
+use bevy::{
+    color::palettes::css, prelude::*, window::WindowResolution, world_serialization::WorldAssetRoot,
+};
 use bevy_mod_inverse_kinematics::*;
 
 #[derive(Component)]
@@ -89,7 +90,8 @@ fn setup_ik(
             entity,
             &children,
             &names,
-        ).ok() else {
+        )
+        .ok() else {
             return;
         };
 
@@ -167,7 +169,9 @@ fn manually_target(
 
     if let Some(event) = cursor.read().last() {
         let view = transform.to_matrix();
-        let Some(viewport_rect) = camera.logical_viewport_rect() else {return;};
+        let Some(viewport_rect) = camera.logical_viewport_rect() else {
+            return;
+        };
         let viewport_size = viewport_rect.size();
         let adj_cursor_pos = event.position - Vec2::new(viewport_rect.min.x, viewport_rect.min.y);
 

@@ -36,7 +36,10 @@ pub struct IKSolverSystemSet;
 
 impl Plugin for InverseKinematicsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, solver::inverse_kinematics_system.in_set(IKSolverSystemSet))
-            .register_type::<IkConstraint>();
+        app.add_systems(
+            Update,
+            solver::inverse_kinematics_system.in_set(IKSolverSystemSet),
+        )
+        .register_type::<IkConstraint>();
     }
 }
